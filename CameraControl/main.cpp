@@ -118,35 +118,48 @@ int main(void)
 	};
 	// Read our .obj file
 	objl::Loader loader;
-	loader.LoadFile("boxstack.obj");
+	loader.LoadFile("cube.obj");
 
 	std::vector<GLfloat> vertices;
 	for (int i = 0; i < loader.LoadedVertices.size(); i++) {
 		vertices.push_back(loader.LoadedVertices[i].Position.X);
 		vertices.push_back(loader.LoadedVertices[i].Position.Y);
 		vertices.push_back(loader.LoadedVertices[i].Position.Z);
-		vertices.push_back(0.7f);
-		vertices.push_back(1.0f);
-		vertices.push_back(0.1f);
+		//vertices.push_back(0.7f);
+		//vertices.push_back(1.0f);
+		//vertices.push_back(0.1f);
+	}
+
+	std::vector<GLuint> indices;
+	for (int i = 0; i < loader.LoadedIndices.size(); i++) {
+		indices.push_back(loader.LoadedIndices[i]);
 	}
 
 	GLuint VBO, VAO, EBO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
 
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
 
     // ================================
     // buffer setup
     // ===============================
-    glBindVertexArray(VAO); 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindVertexArray(VAO);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);	// Vertex attributes stay the same
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices[0], GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);	// Vertex attributes stay the same (change to 6 when adding color)
     glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat))); // Color attribute
-	glEnableVertexAttribArray(1);
+
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat))); // Color attribute
+	//glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
 	//++++++++++Build and compile shader program+++++++++++++++++++++
@@ -190,53 +203,13 @@ int main(void)
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 		// draw object
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3*12);
+		glDrawArrays(GL_TRIANGLES, 0, indices.size());
 		// http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-9-vbo-indexing/
 		//glDrawElements(GL_TRIANGLES, vertices.size() * sizeof(glm::vec3), GL_UNSIGNED_SHORT, (void*)0);
 	
-		glBindVertexArray(0);
-
-		// create second cube
-		glm::mat4 model2;
-		model2 = glm::rotate(model2, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model2 = glm::translate(transform, glm::vec3(1.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model2));
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
-
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3 * 12);
-
-		glBindVertexArray(0);
-
-		// create third cube
-		glm::mat4 model3;
-		model3 = glm::translate(transform, glm::vec3(1.0f, -1.0f, 0.0f));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model3));
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
-
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3 * 12);
-
-		glBindVertexArray(0);
-
-		// create forth cube
-		glm::mat4 model4;
-		model4 = glm::translate(transform, glm::vec3(2.0f, 0.0f, 0.0f));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model4));
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
-
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3 * 12);
-
 		glBindVertexArray(0);
 
 		/* Swap front and back buffers */
