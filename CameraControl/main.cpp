@@ -118,18 +118,25 @@ int main(void)
 	};
 	// Read our .obj file
 	objl::Loader loader;
-	loader.LoadFile("sphere.obj");
+	loader.LoadFile("cup.obj");
+
 
 	std::vector<GLfloat> vertices;
-	for (int i = 0; i < loader.LoadedVertices.size(); i++) {
-		vertices.push_back(loader.LoadedVertices[i].Position.X);
-		vertices.push_back(loader.LoadedVertices[i].Position.Y);
-		vertices.push_back(loader.LoadedVertices[i].Position.Z);
-	}
-
 	std::vector<GLuint> indices;
-	for (int i = 0; i < loader.LoadedIndices.size(); i++) {
-		indices.push_back(loader.LoadedIndices[i]);
+
+	for (int y = 0; y < loader.LoadedMeshes.size(); y++) {
+
+		for (int i = 0; i < loader.LoadedVertices.size(); i++) {
+			vertices.push_back(loader.LoadedVertices[i].Position.X);
+			vertices.push_back(loader.LoadedVertices[i].Position.Y);
+			vertices.push_back(loader.LoadedVertices[i].Position.Z);
+		}
+
+		for (int j = 0; j < loader.LoadedIndices.size(); j++) {
+			indices.push_back(loader.LoadedIndices[j]);
+			//indices.push_back(loader.LoadedIndices[j + 1]);
+			//indices.push_back(loader.LoadedIndices[j + 2]);
+		}
 	}
 
 	GLuint VBO, VAO, EBO;
@@ -149,9 +156,8 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
 
-	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);	// Vertex attributes stay the same (change to 6 when adding color)
     glEnableVertexAttribArray(0);
@@ -206,12 +212,14 @@ int main(void)
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 		// draw object
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, indices.size());
+		//glDrawArrays(GL_TRIANGLES, 0, indices.size());
+
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 		// http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-9-vbo-indexing/
-		//glDrawElements(GL_TRIANGLES, vertices.size() * sizeof(glm::vec3), GL_UNSIGNED_SHORT, (void*)0);
 	
 		glBindVertexArray(0);
-
+		
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
 
