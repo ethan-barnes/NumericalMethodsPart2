@@ -37,6 +37,9 @@ bool keys[1024];
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 GLfloat lastFrame = 0.0f;  	// Time of last frame
 
+// Light attributes
+glm::vec3 lightPos(5.0f, 0.0f, 5.0f);
+
 int main(void)
 {
 	//++++create a glfw window+++++++++++++++++++++++++++++++++++++++
@@ -72,53 +75,10 @@ int main(void)
 	// Setup OpenGL options
 	glEnable(GL_DEPTH_TEST);
 
-	//++++++++++Set up vertex data (and buffer(s)) and attribute pointers+++++++++
-	GLfloat vertices1[] = {
-		-0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
-		0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
-		0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
-		0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
-
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-
-		0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
-		0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
-		0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
-		0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
-		0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
-		0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
-
-		-0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,
-		0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 1.0f
-	};
-	// Read our .obj file
+	// Read the .obj file
 	objl::Loader loader;
-	loader.LoadFile("boxstack.obj");
+	loader.LoadFile("cup.obj");
 
 	std::vector<GLfloat> vertices;
 	std::vector<GLuint> indices;
@@ -129,9 +89,9 @@ int main(void)
 			vertices.push_back(loader.LoadedVertices[i].Position.X);
 			vertices.push_back(loader.LoadedVertices[i].Position.Y);
 			vertices.push_back(loader.LoadedVertices[i].Position.Z);
-			vertices.push_back(0.2f);
-			vertices.push_back(0.8f);
-			vertices.push_back(0.8f);
+			vertices.push_back(loader.LoadedVertices[i].Normal.X);
+			vertices.push_back(loader.LoadedVertices[i].Normal.Y);
+			vertices.push_back(loader.LoadedVertices[i].Normal.Z);
 		}
 
 		for (int j = 0; j < loader.LoadedIndices.size(); j++) {
@@ -156,10 +116,12 @@ int main(void)
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);	// Vertex attributes stay the same (change to 6 when adding color)
+	
+	// Vertex attributes stay the same (change to 6 when adding color)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);	
     glEnableVertexAttribArray(0);
 
+	// Normal attribute
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat))); // Color attribute
     glEnableVertexAttribArray(1);
 
@@ -184,16 +146,26 @@ int main(void)
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
+		//glm::vec3 lightPos(cameraPos.x, cameraPos.y, cameraPos.z);
+
 		// Draw the cube
 		// use shader
 		glUseProgram(shaderProgram);
+		GLint objectColorLoc = glGetUniformLocation(shaderProgram, "objectColor");
+		GLint lightColorLoc = glGetUniformLocation(shaderProgram, "lightColor");
+		GLint lightPosLoc = glGetUniformLocation(shaderProgram, "lightPos");
+		GLint viewPosLoc = glGetUniformLocation(shaderProgram, "viewPos");
+		glUniform3f(objectColorLoc, 1.0f, 0.0f, 0.0f);
+		glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
+		glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+		glUniform3f(viewPosLoc, cameraPos.x, cameraPos.y, cameraPos.z);
 
 		// Create transformations
 		glm::mat4 model;
 		glm::mat4 view;
 		glm::mat4 projection;
 		glm::mat4 transform;
-		//model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, (GLfloat)glfwGetTime() * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
 		
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		projection = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
