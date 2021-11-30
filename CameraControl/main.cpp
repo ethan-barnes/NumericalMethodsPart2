@@ -38,7 +38,7 @@ GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 GLfloat lastFrame = 0.0f;  	// Time of last frame
 
 // Light attributes
-glm::vec3 lightPos(5.0f, 0.0f, 5.0f);
+glm::vec3 lightPos(15.0f, 5.0f, 15.0f);
 
 int main(void)
 {
@@ -77,8 +77,11 @@ int main(void)
 
 
 	// Read the .obj file
+	// https://free3d.com/3d-model/watch-tower-made-of-wood-94934.html
+	// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-5-a-textured-cube/
+	// https://github.com/g-truc/gli
 	objl::Loader loader;
-	loader.LoadFile("cup.obj");
+	loader.LoadFile("watchtower.obj");
 
 	std::vector<GLfloat> vertices;
 	std::vector<GLuint> indices;
@@ -165,7 +168,8 @@ int main(void)
 		glm::mat4 view;
 		glm::mat4 projection;
 		glm::mat4 transform;
-		model = glm::rotate(model, (GLfloat)glfwGetTime() * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
+		//model = glm::rotate(model, (GLfloat)(-3.14/2), glm::vec3(1.0f, 0.0f, 0.0f));
+		//model = glm::rotate(model, (GLfloat)glfwGetTime() * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
 		
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		projection = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
