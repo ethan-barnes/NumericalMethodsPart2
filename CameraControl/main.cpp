@@ -118,7 +118,7 @@ int main(void)
 	};
 	// Read our .obj file
 	objl::Loader loader;
-	loader.LoadFile("cup.obj");
+	loader.LoadFile("sphere.obj");
 
 	std::vector<GLfloat> vertices;
 	for (int i = 0; i < loader.LoadedVertices.size(); i++) {
@@ -156,8 +156,8 @@ int main(void)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);	// Vertex attributes stay the same (change to 6 when adding color)
     glEnableVertexAttribArray(0);
 
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat))); // Color attribute
-	//glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat))); // Color attribute
+    glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
