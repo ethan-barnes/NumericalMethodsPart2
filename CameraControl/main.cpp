@@ -14,6 +14,7 @@
 
 #include "shader.h"
 #include "OBJ-Loader.h"
+#include "texture.hpp"
 
 // Function prototypes
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
@@ -105,6 +106,8 @@ int main(void)
 			indices.push_back(loader.LoadedIndices[j]);
 		}
 	}
+
+	GLuint Texture = loadDDS("textures/watchtower.dds");
 
 	GLuint VBO, VAO, EBO;
 	glGenVertexArrays(1, &VAO);

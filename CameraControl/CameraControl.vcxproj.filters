@@ -29,12 +29,18 @@
     <ClCompile Include="shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="OBJ-Loader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
