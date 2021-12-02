@@ -81,7 +81,11 @@ int main(void)
 	// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-5-a-textured-cube/
 	// https://github.com/g-truc/gli
 	objl::Loader loader;
-	loader.LoadFile("watchtower.obj");
+	if (!loader.LoadFile("objects/watchtower.obj")) {
+		std::cout << "Obj file not found";
+		glfwTerminate();
+		return -1;
+	}
 
 	std::vector<GLfloat> vertices;
 	std::vector<GLuint> indices;
