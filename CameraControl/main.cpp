@@ -91,15 +91,24 @@ int main(void)
 	std::vector<GLfloat> vertices;
 	std::vector<GLuint> indices;
 
+	// Texture coords
+	glm::vec2 UV;
+
+
 	for (int y = 0; y < loader.LoadedMeshes.size(); y++) {
 
 		for (int i = 0; i < loader.LoadedVertices.size(); i++) {
 			vertices.push_back(loader.LoadedVertices[i].Position.X);
 			vertices.push_back(loader.LoadedVertices[i].Position.Y);
 			vertices.push_back(loader.LoadedVertices[i].Position.Z);
+
 			vertices.push_back(loader.LoadedVertices[i].Normal.X);
 			vertices.push_back(loader.LoadedVertices[i].Normal.Y);
 			vertices.push_back(loader.LoadedVertices[i].Normal.Z);
+
+			vertices.push_back(loader.LoadedVertices[i].TextureCoordinate.Y);
+			vertices.push_back(loader.LoadedVertices[i].TextureCoordinate.X);
+			vertices.push_back(0);
 		}
 
 		for (int j = 0; j < loader.LoadedIndices.size(); j++) {
@@ -127,13 +136,17 @@ int main(void)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 	
-	// Vertex attributes stay the same (change to 6 when adding color)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);	
+	// Vertex attributes stay the same
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)0);	
     glEnableVertexAttribArray(0);
 
 	// Normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat))); // Color attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
+
+	// Texture cooards attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
