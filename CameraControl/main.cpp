@@ -106,8 +106,8 @@ int main(void)
 			vertices.push_back(loader.LoadedVertices[i].Normal.Y);
 			vertices.push_back(loader.LoadedVertices[i].Normal.Z);
 
-			vertices.push_back(loader.LoadedVertices[i].TextureCoordinate.Y);
 			vertices.push_back(loader.LoadedVertices[i].TextureCoordinate.X);
+			vertices.push_back(1-(loader.LoadedVertices[i].TextureCoordinate.Y));
 			vertices.push_back(0);
 		}
 
