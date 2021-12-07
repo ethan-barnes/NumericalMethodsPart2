@@ -39,7 +39,7 @@ GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 GLfloat lastFrame = 0.0f;  	// Time of last frame
 
 // Light attributes
-glm::vec3 lightPos(15.0f, 5.0f, 15.0f);
+glm::vec3 lightPos(15.0f, 15.0f, 15.0f);
 
 int main(void)
 {
@@ -65,7 +65,6 @@ int main(void)
 	// GLFW Options
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
-
 	//++++Initialize GLEW to setup the OpenGL Function pointers+++++++
 	glewExperimental = GL_TRUE;
 	glewInit();
@@ -80,7 +79,7 @@ int main(void)
 	// Read the .obj file
 	// https://free3d.com/3d-model/watch-tower-made-of-wood-94934.html
 	// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-5-a-textured-cube/
-	// https://github.com/g-truc/gli
+	// http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
 	objl::Loader loader;
 	if (!loader.LoadFile("objects/watchtower.obj")) {
 		std::cout << "Obj file not found";
@@ -174,11 +173,9 @@ int main(void)
 		// Draw the cube
 		// use shader
 		glUseProgram(shaderProgram);
-		GLint objectColorLoc = glGetUniformLocation(shaderProgram, "objectColor");
 		GLint lightColorLoc = glGetUniformLocation(shaderProgram, "lightColor");
 		GLint lightPosLoc = glGetUniformLocation(shaderProgram, "lightPos");
 		GLint viewPosLoc = glGetUniformLocation(shaderProgram, "viewPos");
-		glUniform3f(objectColorLoc, 1.0f, 0.0f, 0.0f);
 		glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
 		glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
 		glUniform3f(viewPosLoc, cameraPos.x, cameraPos.y, cameraPos.z);
@@ -189,7 +186,7 @@ int main(void)
 		glm::mat4 projection;
 		glm::mat4 transform;
 		//model = glm::rotate(model, (GLfloat)(-3.14/2), glm::vec3(1.0f, 0.0f, 0.0f));
-		//model = glm::rotate(model, (GLfloat)glfwGetTime() * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, (GLfloat)glfwGetTime() * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
 		
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		projection = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
