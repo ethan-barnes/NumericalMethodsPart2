@@ -41,6 +41,43 @@ GLfloat lastFrame = 0.0f;  	// Time of last frame
 // Light attributes
 glm::vec3 lightPos(15.0f, 15.0f, 15.0f);
 
+std::vector<GLfloat> loadVertices(objl::Loader loader) {
+	std::vector<GLfloat> vertices;
+
+	for (int y = 0; y < loader.LoadedMeshes.size(); y++) {
+
+		for (int i = 0; i < loader.LoadedVertices.size(); i++) {
+			vertices.push_back(loader.LoadedVertices[i].Position.X);
+			vertices.push_back(loader.LoadedVertices[i].Position.Y);
+			vertices.push_back(loader.LoadedVertices[i].Position.Z);
+
+			vertices.push_back(loader.LoadedVertices[i].Normal.X);
+			vertices.push_back(loader.LoadedVertices[i].Normal.Y);
+			vertices.push_back(loader.LoadedVertices[i].Normal.Z);
+
+			vertices.push_back(loader.LoadedVertices[i].TextureCoordinate.X);
+			vertices.push_back(1 - (loader.LoadedVertices[i].TextureCoordinate.Y));
+			vertices.push_back(0);
+		}
+	}
+
+	return vertices;
+}
+
+std::vector<GLuint> loadIndices(objl::Loader loader) {
+	std::vector<GLuint> indices;
+
+	for (int y = 0; y < loader.LoadedMeshes.size(); y++) {
+		for (int j = 0; j < loader.LoadedIndices.size(); j++) {
+			indices.push_back(loader.LoadedIndices[j]);
+		}
+	}
+
+	return indices;
+}
+
+
+
 int main(void)
 {
 	//++++create a glfw window+++++++++++++++++++++++++++++++++++++++
@@ -80,59 +117,39 @@ int main(void)
 	// https://free3d.com/3d-model/watch-tower-made-of-wood-94934.html
 	// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-5-a-textured-cube/
 	// http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
+
+	std::string watchTowerLoc = "objects/watchtower.obj";
 	objl::Loader loader;
-	if (!loader.LoadFile("objects/watchtower.obj")) {
+	if (!loader.LoadFile(watchTowerLoc)) {
 		std::cout << "Obj file not found";
 		glfwTerminate();
 		return -1;
 	}
 
-	std::vector<GLfloat> vertices;
-	std::vector<GLuint> indices;
+	std::vector<GLfloat> vertices = loadVertices(loader);
+	std::vector<GLuint> indices = loadIndices(loader);
 
 	// Texture coords
 	glm::vec2 UV;
 
-
-	for (int y = 0; y < loader.LoadedMeshes.size(); y++) {
-
-		for (int i = 0; i < loader.LoadedVertices.size(); i++) {
-			vertices.push_back(loader.LoadedVertices[i].Position.X);
-			vertices.push_back(loader.LoadedVertices[i].Position.Y);
-			vertices.push_back(loader.LoadedVertices[i].Position.Z);
-
-			vertices.push_back(loader.LoadedVertices[i].Normal.X);
-			vertices.push_back(loader.LoadedVertices[i].Normal.Y);
-			vertices.push_back(loader.LoadedVertices[i].Normal.Z);
-
-			vertices.push_back(loader.LoadedVertices[i].TextureCoordinate.X);
-			vertices.push_back(1-(loader.LoadedVertices[i].TextureCoordinate.Y));
-			vertices.push_back(0);
-		}
-
-		for (int j = 0; j < loader.LoadedIndices.size(); j++) {
-			indices.push_back(loader.LoadedIndices[j]);
-		}
-	}
-
 	GLuint Texture = loadDDS("textures/watchtower.dds");
 
-	GLuint VBO, VAO, EBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	GLuint VBOs[2], VAOs[2], EBOs[2];
+	glGenVertexArrays(2, VAOs);
+	glGenBuffers(2, VBOs);
+	glGenBuffers(2, EBOs);
 
     // ================================
     // buffer setup
     // ===============================
 
-    glBindVertexArray(VAO);
+    glBindVertexArray(VAOs[0]);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 	
 	// Vertex attributes stay the same
@@ -149,6 +166,45 @@ int main(void)
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+	// ================================
+	// buffer setup
+	// ===============================
+
+	std::string cupLoc = "objects/cup.obj";
+	objl::Loader loader1;
+	if (!loader1.LoadFile(cupLoc)) {
+		std::cout << "Obj file not found";
+		glfwTerminate();
+		return -1;
+	}
+
+	std::vector<GLfloat> vertices1 = loadVertices(loader1);
+	std::vector<GLuint> indices1 = loadIndices(loader1);
+
+	glBindVertexArray(VAOs[1]);
+	glBufferData(GL_ARRAY_BUFFER, vertices1.size() * sizeof(GLfloat), &vertices1[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
+	glBufferData(GL_ARRAY_BUFFER, vertices1.size() * sizeof(GLfloat), &vertices1[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[1]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices1.size() * sizeof(GLuint), &indices1[0], GL_STATIC_DRAW);
+
+	// Vertex attributes stay the same
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	// Normal attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
+
+	// Texture cooards attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
 	//++++++++++Build and compile shader program+++++++++++++++++++++
 	GLuint shaderProgram = initShader("vert.glsl","frag.glsl");
@@ -170,7 +226,7 @@ int main(void)
 		
 		//glm::vec3 lightPos(cameraPos.x, cameraPos.y, cameraPos.z);
 
-		// Draw the cube
+		// Draw the obj
 		// use shader
 		glUseProgram(shaderProgram);
 		GLint lightColorLoc = glGetUniformLocation(shaderProgram, "lightColor");
@@ -204,8 +260,19 @@ int main(void)
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 
 		// draw object
-		glBindVertexArray(VAO);
+		glBindVertexArray(VAOs[0]);
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+		glBindVertexArray(0);
+
+		// draw second object
+
+		model = glm::rotate(model, (GLfloat)glfwGetTime() * -1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(5.0f, 0.0f, 5.0f));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glBindVertexArray(VAOs[1]);
+		glDrawElements(GL_TRIANGLES, indices1.size(), GL_UNSIGNED_INT, 0);
 
 		glBindVertexArray(0);
 		
@@ -216,8 +283,8 @@ int main(void)
 		glfwPollEvents();
 	}
 	// Properly de-allocate all resources once they've outlived their purpose
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	glDeleteVertexArrays(1, VAOs);
+	glDeleteBuffers(1, VBOs);
 
 	glfwTerminate();
 	return 0;
