@@ -25,7 +25,7 @@ void do_movement();
 const GLuint WIDTH = 640, HEIGHT = 640;
 
 // Camera
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 3.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 GLfloat yaw = -90.0f;	// Yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right (due to how Eular angles work) so we initially rotate a bit to the left.
@@ -40,6 +40,21 @@ GLfloat lastFrame = 0.0f;  	// Time of last frame
 
 // Light attributes
 glm::vec3 lightPos(15.0f, 15.0f, 15.0f);
+
+GLfloat floorVector[] = {
+	// Position data,                    normals,          texture coords
+	-0.131034f, -0.003671f, -1.811131f, 0.0f, -0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+	6.722751f, -0.003671f, -1.811131f, 0.0f, -0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+	-0.131034f, -0.003671f, -8.664917f, 0.0f, -0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+	6.722751f, -0.003671f, -8.664917f, 0.0f, -0.0f, 1.0f, 1.0f, 1.0f, 0.0f
+};
+
+GLint floorIndices[] = {
+	0, 1, 2,
+	1, 1, 2,
+	3, 1, 2,
+	2, 1, 2,
+};
 
 std::vector<GLfloat> loadVertices(objl::Loader loader) {
 	std::vector<GLfloat> vertices;
@@ -112,12 +127,15 @@ int main(void)
 	// Setup OpenGL options
 	glEnable(GL_DEPTH_TEST);
 
+	// Load textures
+	GLuint WatchTexture = loadDDS("textures/watchtower.dds", 0);
+	GLuint FirTexture = loadDDS("textures/fir.dds", 1);
+	GLuint FloorTexture = loadDDS("textures/floor1.dds", 2);
 
 	// Read the .obj file
 	// https://free3d.com/3d-model/watch-tower-made-of-wood-94934.html
 	// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-5-a-textured-cube/
 	// http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
-
 	std::string watchTowerLoc = "objects/watchtower.obj";
 	objl::Loader loader;
 	if (!loader.LoadFile(watchTowerLoc)) {
@@ -132,12 +150,11 @@ int main(void)
 	// Texture coords
 	glm::vec2 UV;
 
-	GLuint Texture = loadDDS("textures/watchtower.dds");
 
-	GLuint VBOs[2], VAOs[2], EBOs[2];
-	glGenVertexArrays(2, VAOs);
-	glGenBuffers(2, VBOs);
-	glGenBuffers(2, EBOs);
+	GLuint VBOs[5], VAOs[5], EBOs[5];
+	glGenVertexArrays(5, VAOs);
+	glGenBuffers(5, VBOs);
+	glGenBuffers(5, EBOs);
 
     // ================================
     // buffer setup
@@ -168,12 +185,12 @@ int main(void)
     glBindVertexArray(0);
 
 	// ================================
-	// buffer setup
+	// buffer setup shape 2
 	// ===============================
 
-	std::string cupLoc = "objects/cup.obj";
+	std::string treeLoc = "objects/fir.obj";
 	objl::Loader loader1;
-	if (!loader1.LoadFile(cupLoc)) {
+	if (!loader1.LoadFile(treeLoc)) {
 		std::cout << "Obj file not found";
 		glfwTerminate();
 		return -1;
@@ -206,8 +223,45 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
+	// ================================
+	// buffer setup shape 3
+	// ===============================
+
+	glBindVertexArray(VAOs[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(floorVector), floorVector, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBOs[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(floorVector), floorVector, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[2]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorIndices), floorIndices, GL_STATIC_DRAW);
+
+	// Vertex attributes stay the same
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	// Normal attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
+
+	// Texture cooards attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 	//++++++++++Build and compile shader program+++++++++++++++++++++
 	GLuint shaderProgram = initShader("vert.glsl","frag.glsl");
+
+	// use shader
+	glUseProgram(shaderProgram);
+	GLint lightColorLoc = glGetUniformLocation(shaderProgram, "lightColor");
+	GLint lightPosLoc = glGetUniformLocation(shaderProgram, "lightPos");
+	GLint viewPosLoc = glGetUniformLocation(shaderProgram, "viewPos");
+	glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
+	glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+	glUniform3f(viewPosLoc, cameraPos.x, cameraPos.y, cameraPos.z);
 
 	//++++++++++++++++++++++++++++++++++++++++++++++
 	/* Loop until the user closes the window */
@@ -226,23 +280,17 @@ int main(void)
 		
 		//glm::vec3 lightPos(cameraPos.x, cameraPos.y, cameraPos.z);
 
-		// Draw the obj
-		// use shader
-		glUseProgram(shaderProgram);
-		GLint lightColorLoc = glGetUniformLocation(shaderProgram, "lightColor");
-		GLint lightPosLoc = glGetUniformLocation(shaderProgram, "lightPos");
-		GLint viewPosLoc = glGetUniformLocation(shaderProgram, "viewPos");
-		glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
-		glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
-		glUniform3f(viewPosLoc, cameraPos.x, cameraPos.y, cameraPos.z);
+		// ==================
+		// draw first object
+		// ==================
 
+		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), WatchTexture - 1);
 		// Create transformations
 		glm::mat4 model;
 		glm::mat4 view;
 		glm::mat4 projection;
 		glm::mat4 transform;
-		//model = glm::rotate(model, (GLfloat)(-3.14/2), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, (GLfloat)glfwGetTime() * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
+		//model = glm::rotate(model, (GLfloat)glfwGetTime() * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
 		
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		projection = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
@@ -265,17 +313,33 @@ int main(void)
 
 		glBindVertexArray(0);
 
+		// ==================
 		// draw second object
-
-		model = glm::rotate(model, (GLfloat)glfwGetTime() * -1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::translate(model, glm::vec3(5.0f, 0.0f, 5.0f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		// ==================
+		
+		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), FirTexture - 1);
+		//model = glm::rotate(model, (GLfloat)glfwGetTime() * -1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(2.0f, 0.0f, -7.0f));
+		model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.5f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glBindVertexArray(VAOs[1]);
 		glDrawElements(GL_TRIANGLES, indices1.size(), GL_UNSIGNED_INT, 0);
 
 		glBindVertexArray(0);
-		
+
+		// ==================
+		// draw third object
+		// ==================
+
+		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), FloorTexture - 1);
+		model = glm::translate(model, glm::vec3(-10.0f, 0.46f, 40.0f));
+		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glBindVertexArray(VAOs[2]);
+		glDrawElements(GL_TRIANGLES, sizeof(floorIndices), GL_UNSIGNED_INT, 0);
+
+		glBindVertexArray(0);
+
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
 

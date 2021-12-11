@@ -9,7 +9,7 @@ uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform vec3 lightColor;
 
-uniform sampler2D myTextureSampler;
+uniform sampler2D texture1;
 
 void main()
 {
@@ -29,7 +29,6 @@ void main()
     vec3 reflectDir = reflect(-lightDir, norm);  
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColor;  
-    
-    vec3 myColor = texture(myTextureSampler, UV).rgb;
+    vec3 myColor = texture(texture1, UV).rgb;
     color = (ambient + diffuse + specular) * myColor;
 } 
