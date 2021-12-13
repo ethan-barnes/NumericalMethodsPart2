@@ -131,11 +131,9 @@ int main(void)
 	GLuint WatchTexture = loadDDS("textures/watchtower.dds", 0);
 	GLuint FirTexture = loadDDS("textures/fir.dds", 1);
 	GLuint FloorTexture = loadDDS("textures/floor1.dds", 2);
+	GLuint RavenTexture = loadDDS("textures/raven.dds", 3);
 
 	// Read the .obj file
-	// https://free3d.com/3d-model/watch-tower-made-of-wood-94934.html
-	// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-5-a-textured-cube/
-	// http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
 	std::string watchTowerLoc = "objects/watchtower.obj";
 	objl::Loader loader;
 	if (!loader.LoadFile(watchTowerLoc)) {
@@ -150,14 +148,13 @@ int main(void)
 	// Texture coords
 	glm::vec2 UV;
 
-
 	GLuint VBOs[5], VAOs[5], EBOs[5];
 	glGenVertexArrays(5, VAOs);
 	glGenBuffers(5, VBOs);
 	glGenBuffers(5, EBOs);
 
     // ================================
-    // buffer setup
+    // buffer setup shape 1 watchtower
     // ===============================
 
     glBindVertexArray(VAOs[0]);
@@ -177,7 +174,7 @@ int main(void)
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
 
-	// Texture cooards attribute
+	// Texture coords attribute
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
 
@@ -185,7 +182,7 @@ int main(void)
     glBindVertexArray(0);
 
 	// ================================
-	// buffer setup shape 2
+	// buffer setup shape 2 tree
 	// ===============================
 
 	std::string treeLoc = "objects/fir.obj";
@@ -216,7 +213,7 @@ int main(void)
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
 
-	// Texture cooards attribute
+	// Texture coords attribute
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
 
@@ -224,7 +221,7 @@ int main(void)
 	glBindVertexArray(0);
 
 	// ================================
-	// buffer setup shape 3
+	// buffer setup shape 3 ground
 	// ===============================
 
 	glBindVertexArray(VAOs[2]);
@@ -235,6 +232,44 @@ int main(void)
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[2]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorIndices), floorIndices, GL_STATIC_DRAW);
+
+	// Vertex attributes stay the same
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	// Normal attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
+
+	// Texture coords attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	// ================================
+	// buffer setup shape 4 raven
+	// ===============================
+	std::string ravenLoc = "objects/raven.obj";
+	objl::Loader loader2;
+	if (!loader2.LoadFile(ravenLoc)) {
+		std::cout << "Obj file not found";
+		glfwTerminate();
+		return -1;
+	}
+
+	std::vector<GLfloat> vertices2 = loadVertices(loader2);
+	std::vector<GLuint> indices2 = loadIndices(loader2);
+
+	glBindVertexArray(VAOs[3]);
+	glBufferData(GL_ARRAY_BUFFER, vertices2.size() * sizeof(GLfloat), &vertices2[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBOs[3]);
+	glBufferData(GL_ARRAY_BUFFER, vertices2.size() * sizeof(GLfloat), &vertices2[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[3]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices2.size() * sizeof(GLuint), &indices2[0], GL_STATIC_DRAW);
 
 	// Vertex attributes stay the same
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)0);
@@ -337,6 +372,28 @@ int main(void)
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glBindVertexArray(VAOs[2]);
 		glDrawElements(GL_TRIANGLES, sizeof(floorIndices), GL_UNSIGNED_INT, 0);
+
+		glBindVertexArray(0);
+
+		// ==================
+		// draw fourth object
+		// ==================
+		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), RavenTexture - 1);
+
+		//model = glm::translate(model, glm::vec3(1.0f, 0.35f, -4.0f));
+		model = glm::translate(model, glm::vec3(0.75f, 0.35f, -3.5f));
+		model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.25f, 0.0f, -0.5f));
+		model = glm::rotate(model, (GLfloat)(3.14 / 4.5), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.02f, 0.02f, 0.02f));
+
+
+
+
+
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glBindVertexArray(VAOs[3]);
+		glDrawElements(GL_TRIANGLES, indices2.size(), GL_UNSIGNED_INT, 0);
 
 		glBindVertexArray(0);
 
