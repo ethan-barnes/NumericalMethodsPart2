@@ -380,16 +380,12 @@ int main(void)
 		// ==================
 		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), RavenTexture - 1);
 
-		//model = glm::translate(model, glm::vec3(1.0f, 0.35f, -4.0f));
-		model = glm::translate(model, glm::vec3(0.75f, 0.35f, -3.5f));
-		model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::translate(model, glm::vec3(0.25f, 0.0f, -0.5f));
-		model = glm::rotate(model, (GLfloat)(3.14 / 4.5), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.85f, 0.35f, -3.55f));
+		model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(0.0f, 1.0f, 0.0f)); 
+		model = glm::translate(model, glm::vec3(0.15f, 0.0f, -0.45f));
+		model = glm::rotate(model, (GLfloat)(3.14 / 4), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, (GLfloat)(3.14 / 2), glm::vec3(0.0f, -1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.02f, 0.02f, 0.02f));
-
-
-
-
 
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glBindVertexArray(VAOs[3]);
