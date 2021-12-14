@@ -73,8 +73,8 @@ std::vector<GLfloat> loadVertices(objl::Loader loader) {
 			vertices.push_back(loader.LoadedVertices[i].Normal.Z);
 
 			vertices.push_back(loader.LoadedVertices[i].TextureCoordinate.X);
-			vertices.push_back(1 - (loader.LoadedVertices[i].TextureCoordinate.Y));
-			vertices.push_back(0);
+			vertices.push_back(1 - (loader.LoadedVertices[i].TextureCoordinate.Y)); // Inverted coordinates due to opengl
+			vertices.push_back(0); // Unused value
 		}
 	}
 
@@ -169,17 +169,17 @@ int main(void)
 	// Setup OpenGL options
 	glEnable(GL_DEPTH_TEST);
 
-	glGenVertexArrays(5, VAOs);
-	glGenBuffers(5, VBOs);
-	glGenBuffers(5, EBOs);
+	glGenVertexArrays(4, VAOs);
+	glGenBuffers(4, VBOs);
+	glGenBuffers(4, EBOs);
 
 	// Load textures
 	GLuint WatchTexture = loadDDS("textures/watchtower.dds", 0);
 	GLuint FirTexture = loadDDS("textures/fir.dds", 1);
 	GLuint FloorTexture = loadDDS("textures/floor1.dds", 2);
 	GLuint RavenTexture = loadDDS("textures/raven.dds", 3);
-
 	
+	// Set up objects and buffers
 	std::vector<GLuint> indices = setUpObject("objects/watchtower.obj", 0);
 	std::vector<GLuint> indices1 = setUpObject("objects/fir.obj", 1);
 	// missing 2 because it is used for the ground
@@ -243,7 +243,7 @@ int main(void)
 		// draw watchtower
 		// ==================
 
-		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), WatchTexture - 1);
+		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), WatchTexture - 1); // Load texture into shader
 		// Create transformations
 		glm::mat4 model;
 		glm::mat4 view;
@@ -275,7 +275,7 @@ int main(void)
 		// draw tree
 		// ==================
 		
-		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), FirTexture - 1);
+		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), FirTexture - 1); // Load texture into shader
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, -7.0f));
 		model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.5f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -288,7 +288,7 @@ int main(void)
 		// draw floor
 		// ==================
 
-		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), FloorTexture - 1);
+		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), FloorTexture - 1); // Load texture into shader
 		model = glm::translate(model, glm::vec3(-10.0f, 0.46f, 40.0f));
 		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -300,8 +300,8 @@ int main(void)
 		// ==================
 		// draw bird
 		// ==================
-		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), RavenTexture - 1);
 
+		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), RavenTexture - 1); // Load texture into shader
 		// Handles orbiting about watchtower and angle of bird
 		model = glm::translate(model, glm::vec3(0.85f, 0.35f, -3.55f));
 		model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(0.0f, 1.0f, 0.0f)); 
