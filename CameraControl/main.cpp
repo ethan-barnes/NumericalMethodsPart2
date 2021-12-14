@@ -56,6 +56,8 @@ GLint floorIndices[] = {
 	2, 1, 2,
 };
 
+GLuint VBOs[5], VAOs[5], EBOs[5];
+
 std::vector<GLfloat> loadVertices(objl::Loader loader) {
 	std::vector<GLfloat> vertices;
 
@@ -91,7 +93,47 @@ std::vector<GLuint> loadIndices(objl::Loader loader) {
 	return indices;
 }
 
+std::vector<GLuint> setUpObject(std::string location, int index) {
+	// Read the .obj file
+	objl::Loader loader;
+	if (!loader.LoadFile(location)) {
+		std::cout << "Obj file not found";
+		glfwTerminate();
+	}
 
+	std::vector<GLfloat> vertices = loadVertices(loader);
+	std::vector<GLuint> indices = loadIndices(loader);
+
+	// ================================
+	// buffer setup
+	// ===============================
+
+	glBindVertexArray(VAOs[index]);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBOs[index]);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[index]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
+
+	// Vertex attributes stay the same
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	// Normal attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
+
+	// Texture coords attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	return indices;
+}
 
 int main(void)
 {
@@ -127,98 +169,21 @@ int main(void)
 	// Setup OpenGL options
 	glEnable(GL_DEPTH_TEST);
 
+	glGenVertexArrays(5, VAOs);
+	glGenBuffers(5, VBOs);
+	glGenBuffers(5, EBOs);
+
 	// Load textures
 	GLuint WatchTexture = loadDDS("textures/watchtower.dds", 0);
 	GLuint FirTexture = loadDDS("textures/fir.dds", 1);
 	GLuint FloorTexture = loadDDS("textures/floor1.dds", 2);
 	GLuint RavenTexture = loadDDS("textures/raven.dds", 3);
 
-	// Read the .obj file
-	std::string watchTowerLoc = "objects/watchtower.obj";
-	objl::Loader loader;
-	if (!loader.LoadFile(watchTowerLoc)) {
-		std::cout << "Obj file not found";
-		glfwTerminate();
-		return -1;
-	}
-
-	std::vector<GLfloat> vertices = loadVertices(loader);
-	std::vector<GLuint> indices = loadIndices(loader);
-
-	// Texture coords
-	glm::vec2 UV;
-
-	GLuint VBOs[5], VAOs[5], EBOs[5];
-	glGenVertexArrays(5, VAOs);
-	glGenBuffers(5, VBOs);
-	glGenBuffers(5, EBOs);
-
-    // ================================
-    // buffer setup shape 1 watchtower
-    // ===============================
-
-    glBindVertexArray(VAOs[0]);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 	
-	// Vertex attributes stay the same
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)0);	
-    glEnableVertexAttribArray(0);
-
-	// Normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
-
-	// Texture coords attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-	// ================================
-	// buffer setup shape 2 tree
-	// ===============================
-
-	std::string treeLoc = "objects/fir.obj";
-	objl::Loader loader1;
-	if (!loader1.LoadFile(treeLoc)) {
-		std::cout << "Obj file not found";
-		glfwTerminate();
-		return -1;
-	}
-
-	std::vector<GLfloat> vertices1 = loadVertices(loader1);
-	std::vector<GLuint> indices1 = loadIndices(loader1);
-
-	glBindVertexArray(VAOs[1]);
-	glBufferData(GL_ARRAY_BUFFER, vertices1.size() * sizeof(GLfloat), &vertices1[0], GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
-	glBufferData(GL_ARRAY_BUFFER, vertices1.size() * sizeof(GLfloat), &vertices1[0], GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[1]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices1.size() * sizeof(GLuint), &indices1[0], GL_STATIC_DRAW);
-
-	// Vertex attributes stay the same
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-
-	// Normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(1);
-
-	// Texture coords attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	std::vector<GLuint> indices = setUpObject("objects/watchtower.obj", 0);
+	std::vector<GLuint> indices1 = setUpObject("objects/fir.obj", 1);
+	// missing 2 because it is used for the ground
+	std::vector<GLuint> indices2 = setUpObject("objects/raven.obj", 3);
 
 	// ================================
 	// buffer setup shape 3 ground
@@ -248,44 +213,6 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	// ================================
-	// buffer setup shape 4 raven
-	// ===============================
-	std::string ravenLoc = "objects/raven.obj";
-	objl::Loader loader2;
-	if (!loader2.LoadFile(ravenLoc)) {
-		std::cout << "Obj file not found";
-		glfwTerminate();
-		return -1;
-	}
-
-	std::vector<GLfloat> vertices2 = loadVertices(loader2);
-	std::vector<GLuint> indices2 = loadIndices(loader2);
-
-	glBindVertexArray(VAOs[3]);
-	glBufferData(GL_ARRAY_BUFFER, vertices2.size() * sizeof(GLfloat), &vertices2[0], GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs[3]);
-	glBufferData(GL_ARRAY_BUFFER, vertices2.size() * sizeof(GLfloat), &vertices2[0], GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[3]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices2.size() * sizeof(GLuint), &indices2[0], GL_STATIC_DRAW);
-
-	// Vertex attributes stay the same
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-
-	// Normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(1);
-
-	// Texture cooards attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
 	//++++++++++Build and compile shader program+++++++++++++++++++++
 	GLuint shaderProgram = initShader("vert.glsl","frag.glsl");
 
@@ -302,7 +229,6 @@ int main(void)
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
-
 		// Calculate deltatime of current frame
 		GLfloat currentFrame = (GLfloat) glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -312,8 +238,6 @@ int main(void)
 		/* Render here */
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		//glm::vec3 lightPos(cameraPos.x, cameraPos.y, cameraPos.z);
 
 		// ==================
 		// draw first object
@@ -325,7 +249,6 @@ int main(void)
 		glm::mat4 view;
 		glm::mat4 projection;
 		glm::mat4 transform;
-		//model = glm::rotate(model, (GLfloat)glfwGetTime() * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
 		
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		projection = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
@@ -353,7 +276,6 @@ int main(void)
 		// ==================
 		
 		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), FirTexture - 1);
-		//model = glm::rotate(model, (GLfloat)glfwGetTime() * -1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, -7.0f));
 		model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.5f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -380,6 +302,7 @@ int main(void)
 		// ==================
 		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), RavenTexture - 1);
 
+		// Handles orbiting about watchtower and angle of bird
 		model = glm::translate(model, glm::vec3(0.85f, 0.35f, -3.55f));
 		model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(0.0f, 1.0f, 0.0f)); 
 		model = glm::translate(model, glm::vec3(0.15f, 0.0f, -0.45f));
