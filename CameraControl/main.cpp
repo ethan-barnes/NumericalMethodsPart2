@@ -240,7 +240,7 @@ int main(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// ==================
-		// draw first object
+		// draw watchtower
 		// ==================
 
 		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), WatchTexture - 1);
@@ -272,7 +272,7 @@ int main(void)
 		glBindVertexArray(0);
 
 		// ==================
-		// draw second object
+		// draw tree
 		// ==================
 		
 		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), FirTexture - 1);
@@ -285,7 +285,7 @@ int main(void)
 		glBindVertexArray(0);
 
 		// ==================
-		// draw third object
+		// draw floor
 		// ==================
 
 		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), FloorTexture - 1);
@@ -298,7 +298,7 @@ int main(void)
 		glBindVertexArray(0);
 
 		// ==================
-		// draw fourth object
+		// draw bird
 		// ==================
 		glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), RavenTexture - 1);
 
